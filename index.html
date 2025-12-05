@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tetris by Allyson</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="game-container">
+        <canvas id="tetris" width="300" height="600"></canvas>
+
+        <div class="sidebar">
+            <h1>TETRIS</h1>
+
+            <div class="score-box">
+                <h2>Pontuação</h2>
+                <span id="score">0</span>
+            </div>
+
+            <div class="next-box">
+                <h2>Próxima peça</h2>
+                <canvas id="next" width="120" height="120"></canvas>
+            </div>
+
+            <button id="startBtn">Iniciar</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
