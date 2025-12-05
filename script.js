@@ -14,25 +14,37 @@ nextCtx.scale(30, 30);
 let board = createMatrix(cols, rows);
 let score = 0;
 
-// Cria Matriz
+// Criar matriz
 function createMatrix(w, h) {
     const matrix = [];
     while (h--) matrix.push(new Array(w).fill(0));
     return matrix;
 }
 
-// Tetrominos
+// Peças
 const pieces = "TJLOSZI";
 
+// Cores fixas por peça
+const colors = {
+    1: "#ff1493", // T
+    2: "#ffd700", // O
+    3: "#ff4500", // L
+    4: "#1e90ff", // J
+    5: "#00fa9a", // I
+    6: "#9400d3", // S
+    7: "#00ced1", // Z
+};
+
+// Criar peça com número fixo (1–7)
 function createPiece(type) {
     switch(type) {
         case "T": return [[0,1,0],[1,1,1],[0,0,0]];
-        case "O": return [[1,1],[1,1]];
-        case "L": return [[1,0,0],[1,1,1],[0,0,0]];
-        case "J": return [[0,0,1],[1,1,1],[0,0,0]];
-        case "I": return [[1,1,1,1]];
-        case "S": return [[0,1,1],[1,1,0],[0,0,0]];
-        case "Z": return [[1,1,0],[0,1,1],[0,0,0]];
+        case "O": return [[2,2],[2,2]];
+        case "L": return [[0,0,3],[3,3,3],[0,0,0]];
+        case "J": return [[4,0,0],[4,4,4],[0,0,0]];
+        case "I": return [[5,5,5,5]];
+        case "S": return [[0,6,6],[6,6,0],[0,0,0]];
+        case "Z": return [[7,7,0],[0,7,7],[0,0,0]];
     }
 }
 
@@ -42,40 +54,29 @@ let player = {
     next: createPiece(pieces[Math.floor(Math.random() * pieces.length)])
 };
 
-// Desenhar quadrado
+// Desenhar bloco com contorno preto
 function drawSquare(x, y, color, ctxRef) {
     ctxRef.fillStyle = color;
     ctxRef.fillRect(x, y, 1, 1);
+
+    ctxRef.strokeStyle = "#000";
+    ctxRef.lineWidth = 0.08;
+    ctxRef.strokeRect(x, y, 1, 1);
 }
 
-const colors = {
-    1: "#ff1493",
-    2: "#00fa9a",
-    3: "#1e90ff",
-    4: "#ff4500",
-    5: "#ffd700",
-    6: "#9400d3",
-    7: "#00ced1",
-};
-
-// Desenhar o tabuleiro
+// Desenhar tabuleiro + peça atual
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     board.forEach((row, y) => {
         row.forEach((value, x) => {
-            if (value !== 0) {
-                drawSquare(x, y, colors[value], ctx);
-            }
+            if (value !== 0) drawSquare(x, y, colors[value], ctx);
         });
     });
 
-    // Desenhar peça atual
     player.piece.forEach((row, y) => {
         row.forEach((value, x) => {
-            if (value !== 0) {
-                drawSquare(x + player.pos.x, y + player.pos.y, colors[value], ctx);
-            }
+            if (value !== 0) drawSquare(x + player.pos.x, y + player.pos.y, colors[value], ctx);
         });
     });
 }
@@ -84,9 +85,8 @@ function drawNext() {
     nextCtx.clearRect(0, 0, 4, 4);
     player.next.forEach((row, y) => {
         row.forEach((value, x) => {
-            if (value !== 0) {
+            if (value !== 0)
                 drawSquare(x, y, colors[value], nextCtx);
-            }
         });
     });
 }
@@ -108,13 +108,11 @@ function collide(board, player) {
     return false;
 }
 
-// Mesclar peça no board
+// Mesclar peça no tabuleiro
 function merge(board, player) {
     player.piece.forEach((row, y) => {
         row.forEach((value, x) => {
-            if (value !== 0) {
-                board[y + player.pos.y][x + player.pos.x] = value;
-            }
+            if (value !== 0) board[y + player.pos.y][x + player.pos.x] = value;
         });
     });
 }
@@ -140,13 +138,13 @@ function sweep() {
 
 // Resetar jogador
 function playerReset() {
-    const type = pieces[Math.floor(Math.random() * pieces.length)];
-    player.piece = createPiece(type);
+    const newType = pieces[Math.floor(Math.random() * pieces.length)];
 
-    // Transformando os valores da peça em cores
-    player.piece = player.piece.map(row =>
-        row.map(v => (v === 1 ? Math.ceil(Math.random()*7) : 0))
-    );
+    // peça atual = próxima peça
+    player.piece = player.next;
+
+    // próxima peça vira outra nova
+    player.next = createPiece(newType);
 
     player.pos.y = 0;
     player.pos.x = Math.floor(cols / 2) - Math.floor(player.piece[0].length / 2);
@@ -160,18 +158,19 @@ function playerReset() {
     drawNext();
 }
 
+// Rotação
 function rotate(matrix) {
     return matrix[0].map((_, i) => matrix.map(row => row[i]).reverse());
 }
 
 function rotatePlayer() {
     const rotated = rotate(player.piece);
-    const oldPos = player.pos.x;
+    const oldX = player.pos.x;
 
     player.piece = rotated;
 
     if (collide(board, player)) {
-        player.pos.x = oldPos;
+        player.pos.x = oldX;
         player.piece = rotate(player.piece);
         player.piece = rotate(player.piece);
         player.piece = rotate(player.piece);
@@ -180,10 +179,7 @@ function rotatePlayer() {
 
 function move(dir) {
     player.pos.x += dir;
-
-    if (collide(board, player)) {
-        player.pos.x -= dir;
-    }
+    if (collide(board, player)) player.pos.x -= dir;
 }
 
 function drop() {
@@ -216,9 +212,7 @@ function update(time = 0) {
 
     dropCounter += delta;
 
-    if (dropCounter > dropInterval) {
-        drop();
-    }
+    if (dropCounter > dropInterval) drop();
 
     draw();
     requestAnimationFrame(update);
