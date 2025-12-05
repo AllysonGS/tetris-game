@@ -1,13 +1,12 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>Tetris by Allyson</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-
     <div class="game-container">
         <canvas id="tetris" width="300" height="600"></canvas>
 
@@ -19,12 +18,15 @@
                 <span id="score">0</span>
             </div>
 
+            <div class="meta-box">
+                <div><strong>Nível:</strong> <span id="level">1</span></div>
+                <div><strong>Linhas:</strong> <span id="lines">0</span></div>
+            </div>
+
             <div class="next-box">
                 <h2>Próxima peça</h2>
                 <canvas id="next" width="120" height="120"></canvas>
             </div>
-
-            <button id="startBtn">Iniciar</button>
         </div>
     </div>
 
